@@ -42,21 +42,6 @@ public class MainActivity extends MapActivity {
 
 		mapOverlays = mapView.getOverlays();
 
-		Drawable mapPinDrawable = this.getResources().getDrawable(R.drawable.icon);
-
-		NewsOverlay itemizedoverlay = new NewsOverlay(mapPinDrawable);
-
-		GeoPoint point = new GeoPoint(19240000,-99120000);
-		OverlayItem overlayitem = new OverlayItem(point, "Hola, Mundo!", "I'm in Mexico City!");
-
-		GeoPoint point2 = new GeoPoint(35410000, 139460000);
-		OverlayItem overlayitem2 = new OverlayItem(point2, "Sekai, konichiwa!", "I'm in Japan!");
-
-		itemizedoverlay.addOverlay(overlayitem);
-		itemizedoverlay.addOverlay(overlayitem2);
-		mapOverlays.add(itemizedoverlay);
-		
-
 		//---- News Parsing
 
 		NewsParser news = new NewsParser();
@@ -268,6 +253,7 @@ public class MainActivity extends MapActivity {
 
 				itemizedoverlay.addOverlay(newOverlayitem);
 				mapOverlays.add(itemizedoverlay);
+			
 			}
 		}
 		
