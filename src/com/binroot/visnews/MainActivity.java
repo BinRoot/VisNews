@@ -11,6 +11,7 @@ import java.util.List;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.TextView;
 
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapActivity;
@@ -26,12 +27,12 @@ public class MainActivity extends MapActivity {
 	ArrayList<NewsBlock> newsBlocks;
 	boolean found = true;
 	List<Overlay> mapOverlays;
-
+	int progress = 0;
+	
 	/** Called when the activity is first created. */
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
-
 
 		mapView = (MapView) findViewById(R.id.mapview);
 		mapView.setFocusable(true);
@@ -48,8 +49,9 @@ public class MainActivity extends MapActivity {
 		news.initRequest();
 		Log.v("NEWS HTTP", news.getFullHTML());
 		newsBlocks = news.getNewsBlocks();
-
-
+		
+		
+		
 		new Thread(new Runnable() {
 			public void run() {
 				try {
@@ -59,8 +61,6 @@ public class MainActivity extends MapActivity {
 				}
 			}
 		}).start();
-
-	
 		
 	}
 
@@ -68,21 +68,11 @@ public class MainActivity extends MapActivity {
 	
 	private void loadCSV() throws IOException {
 
+		progress = 5;
+
 		ArrayList<City> cityList = new ArrayList<City>();
 		ArrayList<Country> countryList = new ArrayList<Country>();
-		
-/*
-		InputStream citiesStream = getResources().openRawResource(R.raw.cities1);
-		BufferedReader citiesScanner = new BufferedReader(new InputStreamReader(citiesStream));
-		InputStream citiesStream2 = getResources().openRawResource(R.raw.cities2);
-		InputStream citiesStream3 = getResources().openRawResource(R.raw.cities3);
-		
-		citiesStream2 = new SequenceInputStream(citiesStream2, citiesStream3);
-		citiesStream = new SequenceInputStream(citiesStream, citiesStream2);
-		
-		InputStream countriesStream = getResources().openRawResource(R.raw.countries);
-		BufferedReader countriesScanner = new BufferedReader(new InputStreamReader(countriesStream));
-*/
+
 		InputStream citiesStream = getResources().openRawResource(R.raw.cities_small);
 		InputStream citiesStream2 = getResources().openRawResource(R.raw.cities_small2);
 		citiesStream = new SequenceInputStream(citiesStream, citiesStream2);
@@ -90,10 +80,11 @@ public class MainActivity extends MapActivity {
 		InputStream countriesStream = getResources().openRawResource(R.raw.countries_small);
 		BufferedReader countriesScanner = new BufferedReader(new InputStreamReader(countriesStream));
 
-		
+		progress = 40;
 		
 		String line;
 		citiesScanner.readLine();
+		Log.v("TICK", "1");
 		while ((line = citiesScanner.readLine()) != null) {
 			String splitArr[] = line.split(",");
 
@@ -104,6 +95,10 @@ public class MainActivity extends MapActivity {
 					splitArr[3]
 			));
 		}
+		
+		progress = 80;
+		
+		Log.v("TICK", "2");
 
 		countriesScanner.readLine();
 		while((line = countriesScanner.readLine()) != null) {
@@ -117,12 +112,17 @@ public class MainActivity extends MapActivity {
 					splitArr[4]
 			));
 		}
-
 		
+		progress = 90;
+		
+		Log.v("TICK", "3");
 		//String headline = "State media: China's torrential rains kill 2 - CNN International";
 		
 		Drawable mapPinDrawable = this.getResources().getDrawable(R.drawable.icon);
-		NewsOverlay itemizedoverlay = new NewsOverlay(mapPinDrawable);;
+		NewsOverlay itemizedoverlay = new NewsOverlay(mapPinDrawable);
+		itemizedoverlay.setContext(this);
+		itemizedoverlay.setNewsBlocks(newsBlocks);
+
 		for(int i=0; i<newsBlocks.size(); i++) {
 			
 			ArrayList<Country> foundCountries = new ArrayList<Country>();
@@ -203,8 +203,7 @@ public class MainActivity extends MapActivity {
 				System.out.println("ERR: no city or country!");
 			}
 			else {
-				System.out.println("1. finalCountry: "+finalCountry+", finalCity "+finalCity);
-				
+
 				if(finalCountry==null) {
 					
 					if(!foundCountries.isEmpty())
@@ -222,8 +221,7 @@ public class MainActivity extends MapActivity {
 						}
 					}
 				}
-				System.out.println("2. finalCountry: "+finalCountry+", finalCity "+finalCity);
-				
+
 				if(finalCity==null) {
 					
 					if(!foundCities.isEmpty())
@@ -238,7 +236,6 @@ public class MainActivity extends MapActivity {
 						}
 					}
 				}
-				System.out.println("3. finalCountry: "+finalCountry+", finalCity "+finalCity);
 				
 				System.out.println("Pointing map to city: "+finalCity.toString());
 				System.out.println("which is in country: "+finalCountry.toString());
@@ -253,11 +250,13 @@ public class MainActivity extends MapActivity {
 
 				itemizedoverlay.addOverlay(newOverlayitem);
 				mapOverlays.add(itemizedoverlay);
-			
+				mapController.animateTo(newpoint);           
+				mapView.postInvalidate();
+				
 			}
 		}
 		
-		
+		progress = 100;
 	}
 
 	public static String cleanWord(String word) {

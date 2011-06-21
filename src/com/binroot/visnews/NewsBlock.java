@@ -7,6 +7,7 @@ public class NewsBlock {
 	private String link = "";
 	private String pubDate = "";
 	private String category = "";
+	private String imgUrl = "";
 	
 	private double lat = 0;
 	private double lon = 0;
@@ -20,6 +21,15 @@ public class NewsBlock {
 		this.category = category;
 		this.description = description;
 	}
+	
+	public String getImgUrl() {
+		return imgUrl;
+	}
+	
+	public void setImgUrl(String imgUrl) {
+		this.imgUrl = imgUrl;
+	}
+	
 	
 	public String getTitle() {
 		return title;
@@ -48,7 +58,7 @@ public class NewsBlock {
 
 
 	public String toString() {
-		return "NewsBlock [category=" + category + ", description="
+		return "NewsBlock ["+"img="+imgUrl+", category=" + category + ", description="
 				+ description + ", link=" + link + ", pubDate=" + pubDate
 				+ ", title=" + title + "]";
 	}

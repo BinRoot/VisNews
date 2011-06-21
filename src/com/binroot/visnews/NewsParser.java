@@ -133,7 +133,17 @@ public class NewsParser extends Activity {
 			String description = simpleHTML.substring(desStartIndex, desStopIndex);
 			desCursor = desStopIndex+1;
 
+			
+			int urlStart = description.indexOf("img src=");
+			urlStart = urlStart + 10;
+			int urlStop = description.indexOf(".jpg");
+			urlStop = urlStop + 4;
+			System.out.println("cutting from "+urlStart+" to "+urlStop);
+			String imgUrl = description.substring(urlStart, urlStop);
+			System.out.println("img= "+imgUrl);
+			
 			NewsBlock newNews = new NewsBlock(title, link, category, pubDate, description);
+			newNews.setImgUrl(imgUrl);
 			newsBlocks.add(newNews);
 			String toStr = newNews.toString();
 			Log.v("NEWSBLOCKS", toStr);
