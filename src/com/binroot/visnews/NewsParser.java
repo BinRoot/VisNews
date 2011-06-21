@@ -135,7 +135,7 @@ public class NewsParser extends Activity {
 
 			
 			int urlStart = description.indexOf("img src=");
-			urlStart = urlStart + 10;
+			urlStart = urlStart + 14;
 			int urlStop = description.indexOf(".jpg");
 			urlStop = urlStop + 4;
 			System.out.println("cutting from "+urlStart+" to "+urlStop);

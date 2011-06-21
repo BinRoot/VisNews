@@ -17,7 +17,7 @@ public class NewsOverlay extends ItemizedOverlay<OverlayItem> {
 
 	private ArrayList<OverlayItem> mOverlays = new ArrayList<OverlayItem>();
 	private Context mContext;
-	private ArrayList<NewsBlock> newsBlocks = new ArrayList<NewsBlock>();
+	private NewsBlock newsBlock = null;
 
 	public NewsOverlay(Drawable defaultMarker) {
 		super(boundCenterBottom(defaultMarker));
@@ -26,8 +26,8 @@ public class NewsOverlay extends ItemizedOverlay<OverlayItem> {
 	public void setContext(Context mContext) {
 		this.mContext = mContext;
 	}
-	public void setNewsBlocks(ArrayList<NewsBlock> newsBlocks) {
-		this.newsBlocks = newsBlocks;
+	public void setNews(NewsBlock newsBlock) {
+		this.newsBlock = newsBlock;
 	}
 
 	public void addOverlay(OverlayItem overlay) {
@@ -53,7 +53,7 @@ public class NewsOverlay extends ItemizedOverlay<OverlayItem> {
 	protected boolean onTap(int index) {
 		Log.v("MAP", "index tapped: "+index);
 		AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-		builder.setMessage(newsBlocks.get(index).getTitle())
+		builder.setMessage(newsBlock.getTitle())
 		.setCancelable(false)
 		.setNegativeButton("Close", new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int id) {

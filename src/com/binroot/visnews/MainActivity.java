@@ -5,13 +5,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.SequenceInputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.TextView;
 
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapActivity;
@@ -28,7 +28,7 @@ public class MainActivity extends MapActivity {
 	boolean found = true;
 	List<Overlay> mapOverlays;
 	int progress = 0;
-	
+
 	/** Called when the activity is first created. */
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -49,9 +49,9 @@ public class MainActivity extends MapActivity {
 		news.initRequest();
 		Log.v("NEWS HTTP", news.getFullHTML());
 		newsBlocks = news.getNewsBlocks();
-		
-		
-		
+
+
+
 		new Thread(new Runnable() {
 			public void run() {
 				try {
@@ -61,11 +61,11 @@ public class MainActivity extends MapActivity {
 				}
 			}
 		}).start();
-		
+
 	}
 
-	
-	
+
+
 	private void loadCSV() throws IOException {
 
 		progress = 5;
@@ -81,7 +81,7 @@ public class MainActivity extends MapActivity {
 		BufferedReader countriesScanner = new BufferedReader(new InputStreamReader(countriesStream));
 
 		progress = 40;
-		
+
 		String line;
 		citiesScanner.readLine();
 		Log.v("TICK", "1");
@@ -95,9 +95,9 @@ public class MainActivity extends MapActivity {
 					splitArr[3]
 			));
 		}
-		
+
 		progress = 80;
-		
+
 		Log.v("TICK", "2");
 
 		countriesScanner.readLine();
@@ -112,48 +112,48 @@ public class MainActivity extends MapActivity {
 					splitArr[4]
 			));
 		}
-		
+
 		progress = 90;
-		
+
 		Log.v("TICK", "3");
 		//String headline = "State media: China's torrential rains kill 2 - CNN International";
-		
+
 		Drawable mapPinDrawable = this.getResources().getDrawable(R.drawable.icon);
-		NewsOverlay itemizedoverlay = new NewsOverlay(mapPinDrawable);
-		itemizedoverlay.setContext(this);
-		itemizedoverlay.setNewsBlocks(newsBlocks);
+
+		ArrayList<NewsOverlay> overlays = new ArrayList<NewsOverlay>();
+
 
 		for(int i=0; i<newsBlocks.size(); i++) {
-			
+
 			ArrayList<Country> foundCountries = new ArrayList<Country>();
 			ArrayList<City> foundCities = new ArrayList<City>();
 			Country finalCountry = null;
 			City finalCity = null;
-			
+
 			String headline = newsBlocks.get(i).getTitle();
-			
+
 			//System.out.println("old headline: "+headline);
 			if(headline.contains(" - ")) {
 				int headlineStopIndex = headline.lastIndexOf(" - ");
 				headline = headline.substring(0, headlineStopIndex);
 			}
 			//System.out.println("new headline: "+headline);
-			
+
 			String [] splitHeadline = headline.split(" ");
 			for(int j=0; j<splitHeadline.length; j++) {
-				
+
 				//remove sugar coating
-				
+
 				String word = splitHeadline[j].trim();
 				String word2 = "";
 				if(j+1<splitHeadline.length)
 					word2 = splitHeadline[j+1].trim();
-				
+
 				word = cleanWord(word);
 				word2 = cleanWord(word2);
-				
+
 				System.out.print(word + " ");
-				
+
 				for(City city : cityList) {
 					if(city.getCity().equals("\""+word+"\"")) {
 						System.out.print("<(city) ");
@@ -185,13 +185,13 @@ public class MainActivity extends MapActivity {
 			System.out.println();
 			System.out.println("found countires: "+foundCountries.toString());
 			System.out.println("found cities: "+foundCities.toString());
-			
+
 			for(Country country : foundCountries) {
 				String countryId = country.getCountryId();
 				finalCountry = country;
 				for(City city : foundCities) {
 					String cityCountryId = city.getCountryId();
-				
+
 					if(countryId.equals(cityCountryId)) {
 						finalCity = city;
 						break;
@@ -205,10 +205,10 @@ public class MainActivity extends MapActivity {
 			else {
 
 				if(finalCountry==null) {
-					
+
 					if(!foundCountries.isEmpty())
 						finalCountry = foundCountries.get(0);
-					
+
 					for(City city : foundCities) {
 						String cityCountryId = city.getCountryId();
 						System.out.println("looking for country id "+cityCountryId);
@@ -223,10 +223,10 @@ public class MainActivity extends MapActivity {
 				}
 
 				if(finalCity==null) {
-					
+
 					if(!foundCities.isEmpty())
 						finalCity = foundCities.get(0);
-					
+
 					String capital = finalCountry.getCapital();
 					System.out.println("capital: "+capital);
 					for(City city : cityList) {
@@ -236,7 +236,7 @@ public class MainActivity extends MapActivity {
 						}
 					}
 				}
-				
+
 				System.out.println("Pointing map to city: "+finalCity.toString());
 				System.out.println("which is in country: "+finalCountry.toString());
 				double lat = Double.parseDouble(finalCity.getLatitude().replace("\"", ""));
@@ -248,15 +248,36 @@ public class MainActivity extends MapActivity {
 				GeoPoint newpoint = new GeoPoint(iLat, iLon);
 				OverlayItem newOverlayitem = new OverlayItem(newpoint, finalCity.getCity(), newsBlocks.get(i).getTitle());
 
+				//Drawable d;
+				Drawable d = LoadImageFromWebOperations(newsBlocks.get(i).getImgUrl());
+				NewsOverlay itemizedoverlay = new NewsOverlay(d);
+				itemizedoverlay.setContext(this);
+				itemizedoverlay.setNews(newsBlocks.get(i));
 				itemizedoverlay.addOverlay(newOverlayitem);
+
 				mapOverlays.add(itemizedoverlay);
 				mapController.animateTo(newpoint);           
 				mapView.postInvalidate();
-				
+
 			}
 		}
-		
+
 		progress = 100;
+	}
+
+	private Drawable LoadImageFromWebOperations(String url) 
+	{ 
+		try 
+		{ 
+			InputStream is = (InputStream) new URL(url).getContent(); 
+			Drawable d = Drawable.createFromStream(is, "src name"); 
+			return d; 
+		}
+		catch (Exception e) 
+		{ 
+			System.out.println("Exc="+e); 
+			return null; 
+		} 
 	}
 
 	public static String cleanWord(String word) {
@@ -290,7 +311,7 @@ public class MainActivity extends MapActivity {
 			word = word.replace(">", "");
 		if(word.contains("*"))
 			word = word.replace("*", "");
-		
+
 		return word;
 	}
 
