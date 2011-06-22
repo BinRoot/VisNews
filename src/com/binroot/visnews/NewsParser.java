@@ -62,6 +62,7 @@ public class NewsParser extends Activity {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(in));
 			StringBuilder str = new StringBuilder();
 			String line = null;
+			Log.d("HTML", "About to build HTML");
 			while((line = reader.readLine()) != null)
 			{
 			    str.append(line);
@@ -120,9 +121,20 @@ public class NewsParser extends Activity {
 		Log.v("XML", titleStr);
 		
 		int desCursor = 0;
+		int linkCursor = 0;
+		
 		for(int i=0; i<sitesList.getTitle().size(); i++) {
 			String title = sitesList.getTitle().get(i);
-			String link = sitesList.getLink().get(i);
+			//String link = sitesList.getLink().get(i);
+			
+			int linkLength = "<link>".length();
+			int linkStartIndex = simpleHTML.indexOf("<link>", linkCursor);
+			linkStartIndex += linkLength;
+			int linkStopIndex = simpleHTML.indexOf("</link>", linkCursor);
+			String link = simpleHTML.substring(linkStartIndex, linkStopIndex);
+			linkCursor = linkStopIndex+1;
+			
+			
 			String category = sitesList.getCategory().get(i);
 			String pubDate = sitesList.getPubDate().get(i);
 			
@@ -133,14 +145,17 @@ public class NewsParser extends Activity {
 			String description = simpleHTML.substring(desStartIndex, desStopIndex);
 			desCursor = desStopIndex+1;
 
+			String imgUrl = "http://upload.wikimedia.org/wikipedia/commons/7/78/BlackStar.PNG";
+			if(description.contains("img src=")) {
+				int urlStart = description.indexOf("img src=");
+				urlStart = urlStart + 14;
+				int urlStop = description.indexOf(".jpg");
+				urlStop = urlStop + 4;
+				System.out.println("cutting from "+urlStart+" to "+urlStop);
+				imgUrl = description.substring(urlStart, urlStop);
+				System.out.println("img= "+imgUrl);
+			}
 			
-			int urlStart = description.indexOf("img src=");
-			urlStart = urlStart + 14;
-			int urlStop = description.indexOf(".jpg");
-			urlStop = urlStop + 4;
-			System.out.println("cutting from "+urlStart+" to "+urlStop);
-			String imgUrl = description.substring(urlStart, urlStop);
-			System.out.println("img= "+imgUrl);
 			
 			NewsBlock newNews = new NewsBlock(title, link, category, pubDate, description);
 			newNews.setImgUrl(imgUrl);

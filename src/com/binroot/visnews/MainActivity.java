@@ -117,14 +117,10 @@ public class MainActivity extends MapActivity {
 
 		Log.v("TICK", "3");
 		//String headline = "State media: China's torrential rains kill 2 - CNN International";
-
-		Drawable mapPinDrawable = this.getResources().getDrawable(R.drawable.icon);
-
-		ArrayList<NewsOverlay> overlays = new ArrayList<NewsOverlay>();
-
+		//String headline = "Michelle Obama meets with Mandela in South Afrinca" // breaks
 
 		for(int i=0; i<newsBlocks.size(); i++) {
-
+			
 			ArrayList<Country> foundCountries = new ArrayList<Country>();
 			ArrayList<City> foundCities = new ArrayList<City>();
 			Country finalCountry = null;
@@ -158,6 +154,7 @@ public class MainActivity extends MapActivity {
 					if(city.getCity().equals("\""+word+"\"")) {
 						System.out.print("<(city) ");
 						foundCities.add(city);
+						break; // makes serach faster, but less accurate
 					}
 					else if(city.getCity().equals("\""+word+" "+word2+"\"")) {
 						System.out.print("<(city)> ");
@@ -258,11 +255,9 @@ public class MainActivity extends MapActivity {
 				mapOverlays.add(itemizedoverlay);
 				mapController.animateTo(newpoint);           
 				mapView.postInvalidate();
-
 			}
 		}
 
-		progress = 100;
 	}
 
 	private Drawable LoadImageFromWebOperations(String url) 
