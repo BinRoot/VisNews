@@ -122,10 +122,16 @@ public class NewsParser extends Activity {
 		
 		int desCursor = 0;
 		int linkCursor = 0;
+		int titleCursor = 0;
 		
 		for(int i=0; i<sitesList.getTitle().size(); i++) {
-			String title = sitesList.getTitle().get(i);
-			//String link = sitesList.getLink().get(i);
+			//String title = sitesList.getTitle().get(i);
+			int titleLength = "<title>".length();
+			int titleStartIndex = simpleHTML.indexOf("<title>", titleCursor);
+			titleStartIndex += titleLength;
+			int titleStopIndex = simpleHTML.indexOf("</title", titleCursor);
+			String title = simpleHTML.substring(titleStartIndex, titleStopIndex);
+			titleCursor = titleStopIndex+1;
 			
 			int linkLength = "<link>".length();
 			int linkStartIndex = simpleHTML.indexOf("<link>", linkCursor);
