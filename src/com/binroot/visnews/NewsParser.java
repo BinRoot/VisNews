@@ -130,7 +130,7 @@ public class NewsParser extends Activity {
 			int titleStartIndex = simpleHTML.indexOf("<title>", titleCursor);
 			titleStartIndex += titleLength;
 			int titleStopIndex = simpleHTML.indexOf("</title", titleCursor);
-			String title = simpleHTML.substring(titleStartIndex, titleStopIndex);
+			String title = simpleHTML.substring(titleStartIndex, titleStopIndex).replace("&apos;", "'");
 			titleCursor = titleStopIndex+1;
 			
 			int linkLength = "<link>".length();

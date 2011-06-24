@@ -2,5 +2,5 @@
 <resources>
     <string name="hello">Hello World, VisNewsActivity!</string>
     <string name="app_name">VisNews</string>
-    <string name="cities">hiii</string>
+    <string name="logtag">VisNews</string>
 </resources>

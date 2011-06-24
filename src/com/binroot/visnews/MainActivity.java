@@ -11,8 +11,12 @@ import java.util.List;
 
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
-import android.widget.Toast;
+import android.view.Gravity;
+import android.view.ViewGroup.LayoutParams;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapActivity;
@@ -27,16 +31,35 @@ public class MainActivity extends MapActivity {
 	MapController mapController;
 	ArrayList<NewsBlock> newsBlocks;
 	ArrayList<Country> countryList;
+	ArrayList<NewsBlock> newsShown;
+	
+	String postHeadlineStr = "";
+	boolean fin = false;
+	boolean run = true;
 	
 	List<Overlay> mapOverlays;
 	int progress = 0;
 	
 	InputStream citiesStream;
+	TextView tv;
 
 	/** Called when the activity is first created. */
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
+		
+		newsShown = new ArrayList<NewsBlock>();
+		
+		RelativeLayout layout_relative_top = new RelativeLayout(this);
+		layout_relative_top.setBackgroundResource(R.drawable.bg_top);
+
+		tv = new TextView(this);
+		tv.setText("HELLO MAP!");
+		tv.setGravity(Gravity.CENTER);
+		tv.setTextAppearance(this, android.R.style.TextAppearance_Large);
+		layout_relative_top.addView(tv);
+		
+		this.addContentView(layout_relative_top, new LayoutParams(LayoutParams.FILL_PARENT, 130));
 		
 		/*
 		 * Setting up Stream
@@ -61,28 +84,48 @@ public class MainActivity extends MapActivity {
 		/*
 		 * News Parsing
 		 */
-		NewsParser news = new NewsParser();
-		news.initRequest();
-		Log.v("NEWS HTTP", news.getFullHTML());
-		newsBlocks = news.getNewsBlocks();
+		final NewsParser news = new NewsParser();
+		
 
 		/*
 		 * Init new thread to load CSV
-		 */
+		 */	
 		new Thread(new Runnable() {
 			public void run() {
-				try {
-					loadCountries();
-					loadCSV();
-				} catch (IOException e) {
-					Log.v("ERR", "IO Exception - Countries");
+				while(run) {
+					news.initRequest();
+					Log.v("NEWS HTTP", news.getFullHTML());
+					newsBlocks = news.getNewsBlocks();
+					try {
+						loadCountries();
+						loadCSV();
+					} catch (IOException e) {
+						Log.v("ERR", "IO Exception - Countries");
+					}
 				}
-				
 			}
 		}).start();
-		
-		
 	}
+	
+	@Override
+	public void onResume() {
+		super.onResume();
+		run = true;
+	}
+	
+	@Override
+	public void onPause() {
+		super.onPause();
+		run = false;
+	}
+	
+	Handler mHandler = new Handler();
+	
+	public final Runnable updateTextTask = new Runnable() {
+		public void run() {
+			tv.setText(postHeadlineStr);
+		}
+	};
 
 	private void loadCountries() throws IOException {
 		countryList = new ArrayList<Country>(); // Total list of countries
@@ -212,13 +255,26 @@ public class MainActivity extends MapActivity {
 				itemizedoverlay.setContext(this);
 				itemizedoverlay.setNews(newsBlocks.get(i));
 				itemizedoverlay.addOverlay(newOverlayitem);
-
-				mapOverlays.add(itemizedoverlay);
+				
+				postHeadlineStr = newsBlocks.get(i).getTitle();
+				Log.d("overlay", "checking overlay");
+				if(!newsShown.contains(newsBlocks.get(i))) {
+					newsShown.add(newsBlocks.get(i));
+					mapOverlays.add(itemizedoverlay);
+					Log.d("overlay", "adding overlay");
+				}
+				else {
+					Log.d("overlay", "overlay already there");
+				}
 				mapController.animateTo(newpoint);           
 				mapView.postInvalidate();
+				mHandler.post(updateTextTask);
+				try {
+					Thread.sleep(4000);
+				} catch (InterruptedException e) { }
 			}
 		}
-		
+		fin = true;
 	}
 
 	private Drawable LoadImageFromWebOperations(String url) 
